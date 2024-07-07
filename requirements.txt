@@ -1,0 +1,8 @@
+nixtla==0.5.2
+numpy==1.26.4
+pandas==2.2.2
+plotly==5.22.0
+prophet==1.1.5
+python-dotenv==1.0.1
+scikit-learn==1.5.1
+streamlit==1.36.0

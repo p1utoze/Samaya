@@ -44,10 +44,9 @@ def mean_absolute_scaled_error(y_true, y_pred, y_train):
 
 # Function to run Prophet model
 def run_prophet(df, forecast_horizon):
-    model = Prophet()
-    model.fit(df)
-    future = model.make_future_dataframe(periods=forecast_horizon)
-    forecast = model.predict(future)
+    st.session_state.prophet.fit(df)
+    future = st.session_state.prophet.make_future_dataframe(periods=forecast_horizon)
+    forecast = st.session_state.prophet.predict(future)
     return forecast
 
 
@@ -66,7 +65,7 @@ def evaluate_model(actual, predicted):
     smape = symmetric_mean_absolute_percentage_error(actual, predicted)
     mape = mean_absolute_percentage_error(actual, predicted)
     mase = mean_absolute_scaled_error(actual, predicted, actual[:-len(predicted)])
-    res = {
+    return {
         'MAE': mae,
         'MSE': mse,
         'RMSE': rmse,
@@ -75,8 +74,6 @@ def evaluate_model(actual, predicted):
         "RMAE": rmae,
         'SMAPE': smape
     }
-    print(res)
-    return res
 
 
 # Streamlit app
@@ -92,6 +89,9 @@ def main():
     if "timegpt" not in st.session_state:
         st.session_state.timegpt = NixtlaClient(os.getenv('NIXTLA_API_KEY'))
         st.session_state.timegpt.validate_api_key()
+
+    if "prophet" not in st.session_state:
+        st.session_state.prophet = Prophet()
 
     # File upload
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
@@ -129,8 +129,10 @@ def main():
                 plot = st.session_state.timegpt.plot(df, timegpt_forecast, engine='plotly')
 
             st.plotly_chart(plot)
-            timegpt_forecast['unique_id'] = "OT"
+            st.plotly_chart(st.session_state.prophet.plot(prophet_forecast))
+
             # Evaluate models
+            timegpt_forecast['unique_id'] = "OT"
             prophet_eval = evaluate_model(df['y'][-forecast_horizon:], prophet_forecast['yhat'][-forecast_horizon:])
             timegpt_eval = evaluate_model(df['y'][-forecast_horizon:], timegpt_forecast['TimeGPT'][-forecast_horizon:])
 
