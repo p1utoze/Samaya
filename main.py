@@ -84,7 +84,7 @@ def main():
     st.title('Time Series Forecasting App')
 
     if "timegpt" not in st.session_state:
-        st.session_state.timegpt = NixtlaClient(os.getenv('NIXTLA_API_KEY'))
+        st.session_state.timegpt = NixtlaClient(api_key=os.getenv('NIXTLA_API_KEY'))
         st.session_state.timegpt.validate_api_key()
 
     if "prophet" not in st.session_state:
