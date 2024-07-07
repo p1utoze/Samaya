@@ -5,12 +5,10 @@ from prophet import Prophet
 from nixtla import NixtlaClient
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import plotly.graph_objects as go
-import utilsforecast.losses as time_losses
 import asyncio
 from dotenv import load_dotenv
 import os
 load_dotenv()
-from concurrent.futures import ThreadPoolExecutor
 
 # Function to calculate MAPE
 def mean_absolute_percentage_error(y_true, y_pred):
@@ -54,7 +52,6 @@ async def run_timegpt(df, **kwargs):
     forecast = st.session_state.timegpt.forecast(df, **kwargs)
     return forecast
 
-# Function to run TimeGPT model
 
 # Function to evaluate models
 def evaluate_model(actual, predicted):
@@ -116,7 +113,9 @@ def main():
 
         # Forecast horizon
         forecast_horizon = st.slider('Select Forecast Horizon', min_value=1, max_value=365, value=30)
-
+        model_name = "timegpt-1"
+        if forecast_horizon > 12:
+            model_name = "timegpt-1-long-horizon"
         if st.button('Run Forecast'):
             # Run models
             with st.spinner('Running Prophet...'):
@@ -125,7 +124,7 @@ def main():
             with st.spinner('Running TimeGPT...'):
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                timegpt_forecast = loop.run_until_complete(run_timegpt(df, h=forecast_horizon))
+                timegpt_forecast = loop.run_until_complete(run_timegpt(df, h=forecast_horizon, model=model_name))
                 plot = st.session_state.timegpt.plot(df, timegpt_forecast, engine='plotly')
 
             st.plotly_chart(plot)
